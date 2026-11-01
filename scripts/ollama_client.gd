@@ -1,5 +1,4 @@
 extends Node
-class_name OllamaClient
 
 signal response_received(payload: Dictionary)
 signal request_failed(reason: String)
@@ -14,12 +13,13 @@ const OUTPUT_SCHEMA := {
     "narration": {"type": "string"},
     "action": {"type": "string", "enum": ["persuade", "deceive", "intimidate", "investigate", "stealth", "athletics", "insight", "medicine", "survival", "history", "arcana", "perception", "help", "invalid"]},
     "ability": {"type": "string", "enum": ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]},
+    "skill": {"type": "string", "enum": ["acrobatics", "animal_handling", "arcana", "athletics", "deception", "history", "insight", "intimidation", "investigation", "medicine", "nature", "perception", "performance", "persuasion", "religion", "sleight_of_hand", "stealth", "survival"]},
     "target": {"type": "string"},
     "dc": {"type": "integer", "minimum": 5, "maximum": 25},
     "consequence_on_success": {"type": "string"},
     "consequence_on_failure": {"type": "string"}
   },
-  "required": ["narration", "action", "ability", "target", "dc", "consequence_on_success", "consequence_on_failure"]
+  "required": ["narration", "action", "ability", "skill", "target", "dc", "consequence_on_success", "consequence_on_failure"]
 }
 
 func _ready() -> void:
@@ -31,7 +31,7 @@ func _ready() -> void:
 
 func ask_for_action(player_text: String, world_context: String) -> void:
   var system_text := """
-You are the scene interpreter for a single-player medieval fantasy adventure. Convert the player's stated intent into one plausible D&D 5e-style ability check and write a concise in-world response. Never decide a roll result, grant an item, change a stat, or invent a success. The game engine rolls and applies consequences. Only use information in the context. If the intent is conversation without a risky action, use action=invalid and DC=5. Keep narration suitable for a grounded plague-era medieval setting. Return only the required JSON object.
+You interpret free-form intentions in a medieval D&D fifth-edition-style adventure. Return a concise narration and one plausible ability/skill check. Never decide whether it succeeds, change hit points, grant items, or mutate world facts; the game engine rolls and applies outcomes. Use only facts from the context. If this is ordinary conversation without a risky action, set action to invalid. Keep the DC between 5 and 25. Return only the required JSON object.
 """
   var user_text := "WORLD STATE:\n%s\n\nPLAYER INTENT:\n%s" % [world_context, player_text]
   var body := {

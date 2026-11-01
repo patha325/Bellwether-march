@@ -9,6 +9,7 @@ ACTION = {
     "narration": "Edda studies your face, then lowers her spear.",
     "action": "persuade",
     "ability": "charisma",
+    "skill": "persuasion",
     "target": "Warden Edda",
     "dc": 12,
     "consequence_on_success": "She opens the gate.",

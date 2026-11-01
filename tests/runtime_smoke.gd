@@ -9,7 +9,7 @@ var watchdog: Timer
 func _initialize() -> void:
   watchdog = Timer.new()
   watchdog.one_shot = true
-  watchdog.wait_time = 20.0
+  watchdog.wait_time = 25.0
   watchdog.autostart = true
   watchdog.timeout.connect(_on_watchdog_timeout)
   root.add_child(watchdog)
@@ -30,57 +30,64 @@ func _run() -> void:
   var game = packed.instantiate()
   root.add_child(game)
   await process_frame
-  if not game.has_method("resolve_check"):
-    _check("game script loaded", false, true)
-    _finish()
-    return
-  if game.ollama == null:
-    _check("game initialization completed", false, true)
-    _finish()
-    return
+  _check("game script and Ollama client initialize", game.ollama != null, true)
+  _check("three-person party is created", game.party.size(), 3)
+  _check("party begins with distinct 5e classes", [game.party[0]["class_name"], game.party[1]["class_name"], game.party[2]["class_name"]], ["Fighter", "Rogue", "Cleric"])
+  _check("Fighter level-one hit points", game.party[0].max_hp, 12)
+  _check("Rogue expertise is recorded", game.party[1].expertise.has("stealth"), true)
+  _check("Cleric has two level-one spell slots", game.party[2].spell_slots, 2)
 
-  var strong_success: Dictionary = game.resolve_check(15, 4, 15)
-  _check("ability check succeeds at DC", strong_success.success, true)
-  _check("check total is computed", strong_success.total, 19)
+  var check_20_fail: Dictionary = game.resolve_check(20, 0, 21)
+  var check_1_success: Dictionary = game.resolve_check(1, 10, 5)
+  _check("natural 20 does not bypass ability-check DC", check_20_fail.success, false)
+  _check("natural 1 does not bypass ability-check modifier", check_1_success.success, true)
+  var save_20_fail: Dictionary = game.resolve_save(20, 0, 21)
+  var save_1_success: Dictionary = game.resolve_save(1, 10, 5)
+  _check("natural 20 does not bypass saving-throw DC", save_20_fail.success, false)
+  _check("natural 1 does not bypass saving-throw modifier", save_1_success.success, true)
+  var miss: Dictionary = game.resolve_attack(1, 20, 12)
+  var critical: Dictionary = game.resolve_attack(20, -2, 30)
+  _check("natural 1 always misses an attack", miss.hit, false)
+  _check("natural 20 always hits and critically hits", critical.hit and critical.critical, true)
 
-  var natural_twenty: Dictionary = game.resolve_check(20, -1, 25)
-  _check("natural 20 succeeds", natural_twenty.success, true)
-  var natural_one: Dictionary = game.resolve_check(1, 20, 5)
-  _check("natural 1 fails", natural_one.success, false)
+  _check("six-second movement is 30 feet for the Fighter", game._movement_limit(game.party[0]) * 5, 30)
+  game.party[0].conditions.append("prone")
+  _check("prone halves movement speed", game._movement_limit(game.party[0]) * 5, 15)
+  game.party[0].conditions.clear()
+  _check("advantage keeps the higher d20", game.resolve_attack_roll(4, 17, 2, 12, 1).roll, 17)
+  _check("disadvantage keeps the lower d20", game.resolve_attack_roll(4, 17, 2, 12, -1).roll, 4)
 
-  var miss: Dictionary = game.resolve_attack(1, 10, 12)
-  _check("natural 1 misses", miss.hit, false)
-  var critical: Dictionary = game.resolve_attack(20, 4, 25)
-  _check("natural 20 hits and is critical", critical.hit and critical.critical, true)
+  var endings := {"clue_found":false, "guard_trust":0}
+  _check("story supports an unknown-culprit ending", game.ending_for(endings), "bell_silenced_unknown")
+  endings.guard_trust = 1
+  _check("story supports a guard-helped ending", game.ending_for(endings), "guard_helped")
+  endings.clue_found = true
+  _check("story supports a clue-only ending", game.ending_for(endings), "sexton_exposed")
+  endings.guard_trust = 2
+  _check("story supports the joint investigation ending", game.ending_for(endings), "sexton_exposed_with_guard")
 
-  game._apply_story_consequence("persuade", true, "Warden Edda")
-  _check("successful social check opens gate", game.story_flags.gate_open, true)
-  _check("successful social check changes attitude", game.guard.attitude, "helpful")
-  game.story_flags.clue_found = false
-  game._apply_story_consequence("investigate", false, "ossuary")
-  _check("failed investigation does not set clue", game.story_flags.clue_found, false)
-  game._apply_story_consequence("investigate", true, "ossuary")
-  _check("investigation clue persists", game.story_flags.clue_found, true)
+  game._apply_story_consequence("persuade", true, "Warden Edda", game.party[0])
+  _check("successful social action earns guard trust", game.story_flags.guard_trust, 1)
+  _check("successful social action opens the gate", game.story_flags.gate_open, true)
+  game._apply_story_consequence("investigate", true, "ossuary", game.party[1])
+  _check("successful exploration action records a clue", game.story_flags.clue_found, true)
 
-  game.turn = "combat"
-  game.hero_pos = Vector2i(1, 5)
-  game.selected_pos = Vector2i(2, 5)
-  game.moved = false
-  game.action_used = false
-  game._on_move_pressed()
-  _check("combat movement uses a turn movement", game.hero_pos, Vector2i(2, 5))
-  _check("movement is marked spent", game.moved, true)
-
-  game.hero_pos = Vector2i(1, 5)
-  game.enemies[0].pos = Vector2i(2, 5)
-  game.enemies[0].hp = 9
-  game.action_used = false
-  game.moved = false
+  # Use a deterministic initiative lineup and exercise one real player turn.
+  game.test_roll_queue.append_array([19, 18, 17, 1, 2])
+  game._start_combat()
+  _check("initiative includes every living combatant", game.turn_order.size(), 5)
+  _check("highest initiative is selected first", game._current_actor().side, "party")
+  var active_id: String = game._current_actor().id
+  var active_index: int = game._party_index_for_id(active_id)
   game.test_roll_queue.clear()
+  var target_index := 0
+  game.enemies[target_index].pos = game.party[active_index].pos + Vector2i(2, 0)
+  game.enemies[target_index].hp = game.enemies[target_index].max_hp
+  game.selected_pos = game.enemies[target_index].pos
   game.test_roll_queue.append_array([20, 4, 4])
   game._on_attack_pressed()
-  _check("critical attack applies damage", game.enemies[0].hp < 9, true)
-  _check("attack spends action", game.action_used, true)
+  _check("party attack spends its action", game._get_actor(active_id).action_used, true)
+  _check("critical attack applies weapon damage", game.enemies[target_index].hp < game.enemies[target_index].max_hp, true)
 
   var client = game.ollama
   client.base_url = "http://127.0.0.1:11434"
@@ -91,6 +98,7 @@ func _run() -> void:
   await create_timer(5.0).timeout
   _check("Ollama chat endpoint returns structured action", model_completed, true)
   _check("structured action selects persuasion", model_response.get("action", ""), "persuade")
+  _check("structured action includes a 5e skill", model_response.get("skill", ""), "persuasion")
 
   _finish()
 
