@@ -940,7 +940,7 @@ func _refresh() -> void:
     hp_label.text = _party_status_with_class()
   elif story_phase == "defeat":
     status_label.text = "THE PARTY HAS FALLEN · retry the encounter"
-    hp_label.text = "Party: " + "  ·  ".join(["%s %d/%d HP" % [p.name, p.hp, p.max_hp] for p in party])
+    hp_label.text = _party_status_hp()
   else:
     status_label.text = "EXPLORATION · %s · %s" % [story_phase.to_upper(), party[selected_party_index].name]
     hp_label.text = _party_status_detailed()
@@ -981,6 +981,12 @@ func _party_combat_status() -> String:
   for member in party:
     parts.append("%s %d/%d" % [member.name, member.hp, member.max_hp])
   return "Allies: " + "  ·  ".join(parts)
+
+func _party_status_hp() -> String:
+  var parts: Array[String] = []
+  for member in party:
+    parts.append("%s %d/%d HP" % [member.name, member.hp, member.max_hp])
+  return "Party: " + "  ·  ".join(parts)
 
 func _party_status_with_class() -> String:
   var parts: Array[String] = []
