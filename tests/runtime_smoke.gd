@@ -105,6 +105,8 @@ func _check(label: String, actual: Variant, expected: Variant) -> void:
 
 func _finish() -> void:
   tests_finished = true
+  for child in root.get_children():
+    child.free()
   if failures.is_empty():
     print("Runtime smoke tests passed.")
     quit(0)
