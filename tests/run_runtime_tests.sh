@@ -17,5 +17,5 @@ for attempt in {1..30}; do
 done
 curl --silent --fail http://127.0.0.1:11434/health >/dev/null
 
-godot --headless --editor --path . --quit
-godot --headless --path . --script res://tests/runtime_smoke.gd
+timeout 60s godot --headless --editor --path . --quit
+timeout 60s godot --headless --path . --script res://tests/runtime_smoke.gd
