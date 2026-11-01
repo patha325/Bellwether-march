@@ -6,9 +6,14 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: godot-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   runtime-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
