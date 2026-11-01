@@ -14,9 +14,11 @@ The default endpoint is `http://localhost:11434/api/chat`. If Ollama is unavaila
 ## Controls
 
 - Type an intention in the right panel and press Enter or **Try it**.
-- Click a destination tile and press **Move**.
-- Press **Attack** when adjacent to a hostile creature.
-- **End turn** advances the enemies and begins the next round.
+- Choose Fighter, Rogue, Cleric, or Wizard for each of the three adventurers before approaching the abbey.
+- Click a destination tile and press **Move** during a character's initiative turn.
+- Select an enemy and use **Attack** or **Shove**; class features include Second Wind, Sneak Attack, Sacred Flame, Healing Word, and Burning Hands.
+- Each active character can move, take one action, and use one bonus action. **End turn** advances initiative; enemies move and attack automatically.
+- Investigate, negotiate, or use other free-form intentions in the story panel. Ollama suggests a skill check, while the game rolls and applies consequences. Clues and trust affect the adventure ending.
 
 ## Runtime checks
 
@@ -26,11 +28,11 @@ Run the headless runtime smoke suite with:
 bash tests/run_runtime_tests.sh
 ```
 
-The suite checks scene loading, natural 1/20 handling, ability checks, attack rolls, story-state persistence, movement, critical damage, and the Ollama-compatible chat request/response path against a deterministic local mock server. GitHub Actions runs these checks on pushes and pull requests.
+The suite checks scene loading, class kits, standard 5e natural-roll handling, movement and advantage, story branches, initiative and an attack turn, plus the Ollama-compatible structured response against a deterministic local mock server. GitHub Actions runs these checks on pushes and pull requests.
 
 ## Rules scope
 
-The prototype uses SRD 5.1 / 2014 fifth-edition-style ability checks, proficiency bonus, d20 attack rolls, Armor Class, hit points, initiative, movement, actions, and weapon damage. It is a focused prototype rather than a complete implementation of every player option or rule. AI proposals are constrained and treated as suggestions; the game validates DC bounds and applies all game-state changes itself.
+The prototype uses SRD 5.1 / 2014 fifth-edition-style level-one class kits, ability checks, saves, proficiency, attack rolls, Armor Class, hit points, initiative, movement, actions, bonus actions, spells, class features, conditions, and weapon damage. It is a focused prototype rather than a complete implementation of every player option or rule. AI proposals are constrained and treated as suggestions; the game validates DC bounds and applies all game-state changes itself.
 
 ## Attribution
 
