@@ -3,9 +3,17 @@ extends SceneTree
 var failures: Array[String] = []
 var model_response: Dictionary = {}
 var model_completed := false
+var tests_finished := false
 
 func _initialize() -> void:
+  call_deferred("_arm_watchdog")
   call_deferred("_run")
+
+func _arm_watchdog() -> void:
+  await create_timer(20.0).timeout
+  if not tests_finished:
+    push_error("Runtime smoke tests timed out before completing.")
+    quit(2)
 
 func _run() -> void:
   var packed := load("res://main.tscn") as PackedScene
@@ -19,6 +27,10 @@ func _run() -> void:
   await process_frame
   if not game.has_method("resolve_check"):
     _check("game script loaded", false, true)
+    _finish()
+    return
+  if game.ollama == null:
+    _check("game initialization completed", false, true)
     _finish()
     return
 
@@ -91,6 +103,7 @@ func _check(label: String, actual: Variant, expected: Variant) -> void:
     print("PASS: %s" % label)
 
 func _finish() -> void:
+  tests_finished = true
   if failures.is_empty():
     print("Runtime smoke tests passed.")
     quit(0)
