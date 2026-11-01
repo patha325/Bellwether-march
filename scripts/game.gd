@@ -208,7 +208,7 @@ func _resolve_action(proposal: Dictionary) -> void:
   if action == "invalid":
     _say(narration)
     return
-  var stat_key := {"strength":"str", "dexterity":"dex", "constitution":"con", "intelligence":"int", "wisdom":"wis", "charisma":"cha"}.get(ability, ability)
+  var stat_key: String = str({"strength":"str", "dexterity":"dex", "constitution":"con", "intelligence":"int", "wisdom":"wis", "charisma":"cha"}.get(ability, ability))
   var mod := int(floor((int(hero.get(stat_key, 10)) - 10) / 2.0))
   var d20 := _roll_die(20)
   var total := d20 + mod + int(hero.prof)
@@ -241,7 +241,7 @@ func _on_move_pressed() -> void:
     var initiative := _roll_die(20) + int(floor((int(hero.dex) - 10) / 2.0))
     _say("Mara's initiative: %d. The enemy moves after your turn." % initiative)
   if moved: return
-  var distance := abs(selected_pos.x - hero_pos.x) + abs(selected_pos.y - hero_pos.y)
+  var distance: int = abs(selected_pos.x - hero_pos.x) + abs(selected_pos.y - hero_pos.y)
   if distance > 6:
     _say("That tile is beyond your 30-foot movement. Choose a closer tile.")
     return
@@ -298,7 +298,7 @@ func _enemy_turn() -> void:
     var enemy: Dictionary = enemies[i]
     if enemy.hp <= 0: continue
     alive = true
-    var dist := abs(enemy.pos.x - hero_pos.x) + abs(enemy.pos.y - hero_pos.y)
+    var dist: int = abs(enemy.pos.x - hero_pos.x) + abs(enemy.pos.y - hero_pos.y)
     if dist <= 1:
       var attack := _roll_die(20) + 3
       if attack >= int(hero.ac):
