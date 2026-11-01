@@ -4,16 +4,21 @@ var failures: Array[String] = []
 var model_response: Dictionary = {}
 var model_completed := false
 var tests_finished := false
+var watchdog: Timer
 
 func _initialize() -> void:
-  call_deferred("_arm_watchdog")
+  watchdog = Timer.new()
+  watchdog.one_shot = true
+  watchdog.wait_time = 20.0
+  root.add_child(watchdog)
+  watchdog.timeout.connect(_on_watchdog_timeout)
+  watchdog.start()
   call_deferred("_run")
 
-func _arm_watchdog() -> void:
-  await create_timer(20.0).timeout
+func _on_watchdog_timeout() -> void:
   if not tests_finished:
-    push_error("Runtime smoke tests timed out before completing.")
-    quit(2)
+    failures.append("FAIL: runtime smoke tests timed out before completing")
+    _finish()
 
 func _run() -> void:
   var packed := load("res://main.tscn") as PackedScene
