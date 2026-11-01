@@ -109,8 +109,12 @@ func _finish() -> void:
     child.free()
   if failures.is_empty():
     print("Runtime smoke tests passed.")
-    quit(0)
+    call_deferred("_exit_after_cleanup", 0)
   else:
     for failure in failures:
       push_error(failure)
-    quit(1)
+    call_deferred("_exit_after_cleanup", 1)
+
+func _exit_after_cleanup(exit_code: int) -> void:
+  await process_frame
+  quit(exit_code)
