@@ -17,6 +17,10 @@ func _run() -> void:
   var game = packed.instantiate()
   root.add_child(game)
   await process_frame
+  if not game.has_method("resolve_check"):
+    _check("game script loaded", false, true)
+    _finish()
+    return
 
   var strong_success: Dictionary = game.resolve_check(15, 4, 15)
   _check("ability check succeeds at DC", strong_success.success, true)
