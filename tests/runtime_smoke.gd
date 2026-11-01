@@ -30,6 +30,10 @@ func _run() -> void:
   var game = packed.instantiate()
   root.add_child(game)
   await process_frame
+  if not game.has_method("resolve_check"):
+    _check("game script loads", false, true)
+    _finish()
+    return
   _check("game script and Ollama client initialize", game.ollama != null, true)
   _check("three-person party is created", game.party.size(), 3)
   _check("party begins with distinct 5e classes", [game.party[0]["class_name"], game.party[1]["class_name"], game.party[2]["class_name"]], ["Fighter", "Rogue", "Cleric"])

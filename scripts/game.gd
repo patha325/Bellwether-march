@@ -934,16 +934,16 @@ func _refresh() -> void:
     if str(current.get("side", "")) == "party":
       hp_label.text = "%s · Level %d %s · HP %d/%d · AC %d · Action %s · Move %s · Bonus %s" % [actor.name, actor.level, actor["class_name"], actor.hp, actor.max_hp, actor.ac, "spent" if actor.action_used else "ready", "spent" if actor.moved else "%d ft" % (_movement_limit(actor) * 5), "spent" if actor.bonus_used else "ready"]
     else:
-      hp_label.text = "Allies: " + "  ·  ".join(["%s %d/%d" % [p.name, p.hp, p.max_hp] for p in party])
+      hp_label.text = _party_combat_status()
   elif story_phase == "complete":
     status_label.text = "ADVENTURE COMPLETE · %s" % story_ending.replace("_", " ").to_upper()
-    hp_label.text = "Party: " + "  ·  ".join(["%s (%s) %d/%d HP" % [p.name, p["class_name"], p.hp, p.max_hp] for p in party])
+    hp_label.text = _party_status_with_class()
   elif story_phase == "defeat":
     status_label.text = "THE PARTY HAS FALLEN · retry the encounter"
     hp_label.text = "Party: " + "  ·  ".join(["%s %d/%d HP" % [p.name, p.hp, p.max_hp] for p in party])
   else:
     status_label.text = "EXPLORATION · %s · %s" % [story_phase.to_upper(), party[selected_party_index].name]
-    hp_label.text = "Party: " + "  ·  ".join(["%s · %s · HP %d/%d · AC %d" % [p.name, p["class_name"], p.hp, p.max_hp, p.ac] for p in party])
+    hp_label.text = _party_status_detailed()
   if is_instance_valid(board): board.queue_redraw()
   var combat_party_turn := _is_party_turn()
   var actor := _active_party_actor()
@@ -975,6 +975,24 @@ func _say(text: String) -> void:
     log_label.clear()
     for line in event_log: log_label.append_text(line + "\n\n")
     log_label.scroll_to_line(log_label.get_line_count())
+
+func _party_combat_status() -> String:
+  var parts: Array[String] = []
+  for member in party:
+    parts.append("%s %d/%d" % [member.name, member.hp, member.max_hp])
+  return "Allies: " + "  ·  ".join(parts)
+
+func _party_status_with_class() -> String:
+  var parts: Array[String] = []
+  for member in party:
+    parts.append("%s (%s) %d/%d HP" % [member.name, member["class_name"], member.hp, member.max_hp])
+  return "Party: " + "  ·  ".join(parts)
+
+func _party_status_detailed() -> String:
+  var parts: Array[String] = []
+  for member in party:
+    parts.append("%s · %s · HP %d/%d · AC %d" % [member.name, member["class_name"], member.hp, member.max_hp, member.ac])
+  return "Party: " + "  ·  ".join(parts)
 
 func resolve_check(roll: int, bonus: int, dc: int) -> Dictionary:
   var total := roll + bonus
