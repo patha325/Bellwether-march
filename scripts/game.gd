@@ -328,7 +328,7 @@ func _resolve_action(proposal: Dictionary) -> void:
     pending_action.clear()
     return
   var ability_name := str(proposal.get("ability", "wisdom")).to_lower()
-  var ability_key := {"strength":"str", "dexterity":"dex", "constitution":"con", "intelligence":"int", "wisdom":"wis", "charisma":"cha"}.get(ability_name, ability_name)
+  var ability_key: String = str({"strength":"str", "dexterity":"dex", "constitution":"con", "intelligence":"int", "wisdom":"wis", "charisma":"cha"}.get(ability_name, ability_name))
   var skill := str(proposal.get("skill", _skill_for_action(action))).to_lower()
   var bonus := _ability_modifier(int(actor.get(ability_key, 10)))
   if skill in actor.get("skills", []):
@@ -591,7 +591,7 @@ func _use_hide(actor: Dictionary) -> void:
 func _in_burning_hands_cone(origin: Vector2i, target: Vector2i, direction: Vector2i) -> bool:
   var delta: Vector2i = target - origin
   var forward := delta.x * direction.x + delta.y * direction.y
-  var side := abs(delta.x * direction.y - delta.y * direction.x)
+  var side: int = absi(delta.x * direction.y - delta.y * direction.x)
   return forward >= 1 and forward <= 3 and side <= forward / 2
 
 func _on_end_turn() -> void:
@@ -746,8 +746,8 @@ func _choose_enemy_target(enemy: Dictionary) -> Dictionary:
   return best
 
 func _next_step_toward(from: Vector2i, to: Vector2i) -> Vector2i:
-  var dx := sign(to.x - from.x)
-  var dy := sign(to.y - from.y)
+  var dx: int = signi(to.x - from.x)
+  var dy: int = signi(to.y - from.y)
   if abs(to.x - from.x) >= abs(to.y - from.y) and dx != 0:
     return from + Vector2i(dx, 0)
   if dy != 0:
