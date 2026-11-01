@@ -10,9 +10,9 @@ func _initialize() -> void:
   watchdog = Timer.new()
   watchdog.one_shot = true
   watchdog.wait_time = 20.0
-  root.add_child(watchdog)
+  watchdog.autostart = true
   watchdog.timeout.connect(_on_watchdog_timeout)
-  watchdog.start()
+  root.add_child(watchdog)
   call_deferred("_run")
 
 func _on_watchdog_timeout() -> void:
