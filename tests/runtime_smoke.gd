@@ -71,7 +71,8 @@ func _run() -> void:
   game.enemies[0].hp = 9
   game.action_used = false
   game.moved = false
-  game.test_roll_queue = [20, 4, 4]
+  game.test_roll_queue.clear()
+  game.test_roll_queue.append_array([20, 4, 4])
   game._on_attack_pressed()
   _check("critical attack applies damage", game.enemies[0].hp < 9, true)
   _check("attack spends action", game.action_used, true)
