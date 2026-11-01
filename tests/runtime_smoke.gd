@@ -66,6 +66,7 @@ func _run() -> void:
   endings.guard_trust = 1
   _check("story supports a guard-helped ending", game.ending_for(endings), "guard_helped")
   endings.clue_found = true
+  endings.guard_trust = 0
   _check("story supports a clue-only ending", game.ending_for(endings), "sexton_exposed")
   endings.guard_trust = 2
   _check("story supports the joint investigation ending", game.ending_for(endings), "sexton_exposed_with_guard")
